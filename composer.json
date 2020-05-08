@@ -1,0 +1,15 @@
+{
+    "name": "lars/wp-version-bumper",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "authors": [
+        {
+            "name": "Lars C. Magnusson",
+            "email": "lars.magnusson@sogeti.com"
+        }
+    ],
+    "bin": "bin/wp-version-bumper",
+    "require": {
+        "phlak/semver": "^3.2"
+    }
+}

@@ -1,0 +1,64 @@
+#!/usr/bin/env php
+<?php
+require_once dirname(__DIR__, 3) . '/autoload.php';
+
+use PHLAK\SemVer;
+
+/**
+ * Get current version from latest tag
+ */
+$currentVersion = trim( shell_exec("git tag | sort -r | head -n 1") );
+$version = new SemVer\Version($currentVersion);
+
+/**
+ * What kind of increment? patch is default
+ */
+$increment = isset($argv[1]) ? $argv[1] : 'patch';
+
+if ($increment == 'patch') {
+    $version->incrementPatch();
+} else if($increment == 'minor') {
+    $version->incrementMinor();
+} else if($increment == 'major') {
+    $version->incrementMajor();
+} else {
+    echo "Unknown increment? ${increment}";
+    exit(1);
+}
+
+$newVersion = (string)$version;
+
+/**
+ * Add new tag to latest commit
+ */
+if (is_dir(".git")) {
+    shell_exec("git tag $newVersion");
+}
+
+/**
+ * Detect and replace in plugin
+ */
+if(is_file(basename(getcwd()).'.php')) {
+    $pluginFile = basename(getcwd()).'.php';
+
+    $pluginContent = file_get_contents($pluginFile);
+
+    file_put_contents(
+        $pluginFile,
+        preg_replace('/Version:(.*)/', "Version: $newVersion", $pluginContent, 1)
+    );
+}
+
+/**
+ * Detect and replace in theme
+ */
+if(is_file('style.css')) {
+    $pluginContent = file_get_contents('style.css');
+
+    file_put_contents(
+        'style.css',
+        preg_replace('/Version:(.*)/', "Version: $newVersion", $pluginContent, 1)
+    );
+}
+
+echo "bumped $currentVersion -> $newVersion", PHP_EOL;
